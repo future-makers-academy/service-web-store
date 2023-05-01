@@ -3,8 +3,8 @@
 tables:
 
 CREATE TABLE "cartItems" (
-    "cartItemId" integer NOT NULL,
-    "cartId" integer NOT NULL,
+    "cartItemId" SERIAL,
+    "cartId" integer references carts(cartID),
     "productId" integer NOT NULL,
     price integer NOT NULL
 );
@@ -15,7 +15,7 @@ CREATE TABLE carts (
 );
 
 CREATE TABLE orders (
-    "orderId" integer NOT NULL,
+    "orderId" SERIAL,
     "cartId" integer NOT NULL,
     name text NOT NULL,
     "creditCard" text NOT NULL,
@@ -24,16 +24,20 @@ CREATE TABLE orders (
 );
 
 CREATE TABLE products (
-    "productId" integer NOT NULL,
+    "productId" SERIAL,
     name text NOT NULL,
     price integer NOT NULL,
-    image text NOT NULL,
+    image text NULL,
     "description" text NOT NULL
     
 );
 
 CREATE TABLE customer (
+    "customerId" SERIAL,
     name text NOT NULL,
     address text NOT NULL
     
 );
+
+insert into products(name, price, description) values('hat',4.00,'A nice hat');
+
