@@ -271,8 +271,8 @@ Repeating the process in step 6 create four new tables in the database with the 
 >     "createdAt" timestamp(6) with time zone DEFAULT now() NOT NULL
 > );
 > 
-> CREATE TABLE customer (
->     "customerId" SERIAL,
+> CREATE TABLE customers (
+>     "customersId" SERIAL,
 >     name text NOT NULL,
 >     address text NOT NULL
 >     
@@ -308,8 +308,8 @@ Repeating the process to create an endpoint in step 8, create GET endpoints for 
 >     });
 >     dbclient.end;
 > })
-> app.get('/customer', (req, res)=>{
->     dbclient.query(`Select * from customer`, (err, result)=>{
+> app.get('/customers', (req, res)=>{
+>     dbclient.query(`Select * from customers`, (err, result)=>{
 >         if(!err){
 >             res.send(result.rows);
 >         }
@@ -326,8 +326,8 @@ Notice the SELECT command we are using.  This is sql that will return records.
 Now we want to insert some records, so we will create some new endpoints, but instead of using SELECT we will use INSERT.  And since we will be taking data from the client to insert, instead of a GET route in our node server, we will create a new POST route like such.
 
 
-> app.post('/customer', (req, res)=>{
->     dbclient.query("insert into customer(name, address) values ('" + req.body.name + "','" + req.body.address + "')", (err, result)=>{
+> app.post('/customers', (req, res)=>{
+>     dbclient.query("insert into customers(name, address) values ('" + req.body.name + "','" + req.body.address + "')", (err, result)=>{
 >         if(!err){
 >             console.log("success!");
 >             res.send(result);
@@ -344,13 +344,13 @@ Now we can test the endpoint using a simple ajax post!  Let's add a new html fil
 
 Create a new file called test.html.  Add the following to the file:
 
->   <form action="customer" method="post">
+>   <form action="customers" method="post">
 >     <input type="text" name="name" value="{Your name}" />
 >     <input type="text" name="address" value="{Your Country}" />
 >     <input type="submit" />
 >   </form>
 
-Notice the method is post.  Submitting this form will send the data as a POST request to the customer endpoint/route.  
+Notice the method is post.  Submitting this form will send the data as a POST request to the customers endpoint/route.  
 
 
 Now let's change the default root site from our "Hello World" greeting to this form.  Remember, this is not our front end, just a little testing page.
@@ -365,7 +365,7 @@ This will basically send the newly created html file to the client.
 Save All, and restart your node server.  Navigate to the base page and fill out and submit the form.  Hopefully it worked!
 You should see the response from the insert process.  We can change this to be whatever we want, of course.
 
-Now navigate to the customer page, and it should return your newly submitted data.
+Now navigate to the customers page, and it should return your newly submitted data.
 
 
 ### 12. Create the rest of the endpoints for the remaining tables.
@@ -376,10 +376,10 @@ Repeating the process to create an endpoint in step 11, create POST endpoints fo
 
 ### 13.  Finishing the API
 
-Create DELETE endpoints for each of the tables.  Here, the http request method and the sql command are named the same!   Here is an example for the customer table:
+Create DELETE endpoints for each of the tables.  Here, the http request method and the sql command are named the same!   Here is an example for the customers table:
 
-> app.delete('/customer/:id', (req, res)=>{
->     dbclient.query("delete from customer where customerId = " + req.body.id, (err, result)=>{
+> app.delete('/customers/:id', (req, res)=>{
+>     dbclient.query("delete from customers where customersId = " + req.body.id, (err, result)=>{
 >         if(!err){
 >             console.log("success!");
 >             res.send(result);
