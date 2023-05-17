@@ -28,7 +28,7 @@ CREATE TABLE orders
     CONSTRAINT orders_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.password_reset_tokens
+CREATE TABLE password_reset_tokens
 (
     id SEQUENCE,
     user_id bigint NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE public.password_reset_tokens
     expires_at timestamp NOT NULL
 );
 
-CREATE TABLE public.products
+CREATE TABLE products
 (
     id SEQUENCE,
     name text NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE public.products
     --image_path text,    
 );
 
-CREATE TABLE public.users
+CREATE TABLE users
 (
     id SEQUENCE,
     name text NOT NULL,
@@ -55,6 +55,14 @@ CREATE TABLE public.users
     password text NOT NULL,
     CONSTRAINT users_pkey PRIMARY KEY (id),
     CONSTRAINT users_email_key UNIQUE (email)
+);
+
+CREATE TABLE customers (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  address TEXT,
+  phone TEXT
 );
 
 CREATE TABLE "session" (
