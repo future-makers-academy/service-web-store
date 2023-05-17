@@ -2,10 +2,10 @@ const {Client} = require('pg')
 
 const client = new Client({
     host: "localhost",
-    user: "postgres",    
+    user: "admin",    
     port: 5432,
-    database: "dbstore",
-    password: "5up3r53cur3"
+    database: "postgres",
+    password: "admin"
 })
 
 module.exports = client
