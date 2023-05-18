@@ -6,6 +6,11 @@ const app = express();
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const cors = require('cors');
+var fs = require('fs');
+
+if (!fs.existsSync('images')) {
+    fs.mkdirSync('images');
+}
 
 app.use(cors({ origin: '*' }));
 
