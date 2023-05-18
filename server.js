@@ -134,6 +134,16 @@ app.post('/product', requireLogin, upload.single('image'), (req, res)=>{
     dbclient.end;
 })
 
+app.get('/product/:id', requireLogin, (req, res)=>{
+    let id = req.params.id;
+    dbclient.query(`SELECT * FROM products WHERE id = ${id}`, (err, result)=>{
+        if(!err){
+            res.send(result.rows[0]);
+        }
+    });
+    dbclient.end;
+})
+
 app.put('/product/:id', requireLogin, (req, res)=>{    
     let name = req.body.name;
     let price = req.body.price;
@@ -219,6 +229,28 @@ app.post('/cart/add', (req, res) =>{
         });
     dbclient.end;
     
+})
+
+app.get('/cart/item/:id', (req, res)=>{
+    let id = req.params.id;
+    dbclient.query(`SELECT * FROM cart_items WHERE user_id = ${req.session.userId} AND id = ${id}`, (err, result)=>{
+        if(!err){
+            res.send(result.rows);
+        }
+    });
+    dbclient.end;
+})
+
+app.delete('/cart/item/:id', (req, res)=>{
+    let id = req.params.id;
+    dbclient.query(`DELETE from cart_items WHERE user_id = ${req.session.userId} AND id = ${id}`, (err, result)=>{
+        if(!err){
+            res.status(200).send("Deleted " + req.params.id);
+        } else {
+            console.log(err);
+        }
+    });
+    dbclient.end;
 })
 
 app.get('/carts', (req, res)=>{
