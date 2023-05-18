@@ -32,5 +32,8 @@
   "bugs": {
     "url": "https://github.com/future-makers-academy/service-web-store/issues"
   },
-  "homepage": "https://github.com/future-makers-academy/service-web-store#readme"
+  "homepage": "https://github.com/future-makers-academy/service-web-store#readme",
+  "directories": {
+    "doc": "docs"
+  }
 }
