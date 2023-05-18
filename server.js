@@ -12,7 +12,10 @@ if (!fs.existsSync('images')) {
     fs.mkdirSync('images');
 }
 
-app.use(cors({ origin: '*' }));
+app.use(cors({
+    credentials: true,
+    origin: 'http://localhost:3000',
+}));
 
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -176,8 +179,8 @@ app.get('/testproductget', (req, res)=>{
 
 
 
-app.get('/cartitems', (req, res)=>{
-     dbclient.query(`Select * from cartitems`, (err, result)=>{
+app.get('/cart', (req, res)=>{
+     dbclient.query(`Select * from cart_items WHERE user_id = ${req.session.userId}`, (err, result)=>{
          if(!err){
              res.send(result.rows);
          }
@@ -188,7 +191,7 @@ app.get('/cartitems', (req, res)=>{
 app.post('/cart/add', (req, res) =>{
 
     dbclient.query(`INSERT INTO cart_items (user_id, product_id, quantity) 
-        VALUES (${req.session.userId}, ${req.body.product_id}, ${quantity})`
+        VALUES (${req.session.userId}, ${req.body.product_id}, ${req.body.quantity})`
         , (err, result)=>{
             if(!err){
                 res.status(200).json({ message: 'Product added to cart' });
