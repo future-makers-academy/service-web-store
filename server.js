@@ -86,21 +86,40 @@ const requireLogin = (req, res, next) => {
   };
 
 
-app.get('/', (req, res)=>{
-    res.send("blah");
-})
 
-app.get('/products', (req, res)=>{
-    dbclient.query(`Select * from products`, (err, result)=>{
-        if(!err){
-            res.status(200).send(result.rows);
-        }
-    });
-    dbclient.end;
+  app.get('/products', (req, res)=>{
+    
+    try{
+
+        var imageBaseUrl = req.protocol + "://" + req.headers.host + "/images/";
+        
+        dbclient.query(`SELECT
+            name
+            , description
+            , price
+            , '${imageBaseUrl}' || image_path
+            FROM products`, (err, result)=>{
+            
+            if(!err){
+                res.status(200).send(result.rows);
+            } else {
+                console.log(err);
+            }
+        });
+        dbclient.end;
+    } catch(err){
+        console.log(err);
+    }
 })
 
 app.get('/product/:id', (req, res)=>{
-    dbclient.query(`Select * from products WHERE id = ${req.params.id}`, (err, result)=>{
+    dbclient.query(`SELECT
+        name
+        , description
+        , price
+        , '${imageBaseUrl}' || image_path
+    FROM products
+    WHERE id = ${req.params.id}`, (err, result)=>{
         if(!err){
             res.status(200).send(result.rows);
         }
@@ -108,7 +127,7 @@ app.get('/product/:id', (req, res)=>{
     dbclient.end;
 })
 
-app.post('/product', requireLogin, upload.single('image'), (req, res)=>{    
+app.post('/product', upload.single('image'), (req, res)=>{    
 
       dbclient.query(
         `INSERT INTO products(
@@ -121,7 +140,7 @@ app.post('/product', requireLogin, upload.single('image'), (req, res)=>{
                 '${req.body.name}'
                 ,'${req.body.description}'
                 ,${req.body.price}
-                ,'${req.protocol+"://"+req.headers.host+"/images/"+req.file.filename}'
+                ,'${req.file.filename}'
             )
             RETURNING *`, (err, result)=>{
             if(!err){
@@ -134,28 +153,22 @@ app.post('/product', requireLogin, upload.single('image'), (req, res)=>{
     dbclient.end;
 })
 
-app.get('/product/:id', requireLogin, (req, res)=>{
-    let id = req.params.id;
-    dbclient.query(`SELECT * FROM products WHERE id = ${id}`, (err, result)=>{
-        if(!err){
-            res.send(result.rows[0]);
-        }
-    });
-    dbclient.end;
-})
 
-app.put('/product/:id', requireLogin, (req, res)=>{    
+app.put('/product/:id',  upload.single('image'), (req, res)=>{    
+
     let name = req.body.name;
     let price = req.body.price;
     let image = req.body.image;
     let description = req.body.description;
     let id = req.params.id;
+
     dbclient.query(
         `UPDATE products
          SET name = '${name}', price = ${price}, 
-         image = '${req.protocol+"://"+req.headers.host+"/images/"+image}', description = '${description}'
+         image_path = '${image}', description = '${description}'
          WHERE id = ${id}`,
         (err, result)=>{
+            
             if(!err){
                 console.log("success!");
                 res.status(200).send(result.rows);
@@ -165,6 +178,8 @@ app.put('/product/:id', requireLogin, (req, res)=>{
         });
     dbclient.end;
 })
+
+
 
 app.delete('/product/:id', requireLogin, (req, res)=>{
     let id = req.params.id;
