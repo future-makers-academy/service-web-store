@@ -227,7 +227,7 @@ app.get('/carts', (req, res)=>{
      dbclient.end;
  })
 
- app.delete('/users/:id', (req, res)=>{
+ app.delete('/user/:id', (req, res)=>{
 
     console.log("DELETE from users WHERE id = " + req.params.id);
 
@@ -260,7 +260,7 @@ app.put('/users/:email', (req, res)=>{
     dbclient.end;
 })
 
-app.post('/users', async (req, res) => {
+app.post('/user', async (req, res) => {
 
     dbclient.query(`SELECT * FROM users WHERE email = '${req.body.email}'`, (err, result)=>{
         if(!err){
