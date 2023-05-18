@@ -77,6 +77,15 @@ const storage = multer.diskStorage({
 
 dbclient.connect()
 
+
+const requireLogin = (req, res, next) => {
+    if (!req.session.userId) {
+      return res.redirect('/login');
+    }
+    next();
+  };
+
+
 app.get('/', (req, res)=>{
     res.send("blah");
 })
@@ -84,14 +93,22 @@ app.get('/', (req, res)=>{
 app.get('/products', (req, res)=>{
     dbclient.query(`Select * from products`, (err, result)=>{
         if(!err){
-            res.send(result.rows);
+            res.status(200).send(result.rows);
         }
     });
     dbclient.end;
 })
 
+app.get('/product/:id', (req, res)=>{
+    dbclient.query(`Select * from products WHERE id = ${req.params.id}`, (err, result)=>{
+        if(!err){
+            res.status(200).send(result.rows);
+        }
+    });
+    dbclient.end;
+})
 
-app.post('/product', upload.single('image'), (req, res)=>{    
+app.post('/product', requireLogin, upload.single('image'), (req, res)=>{    
 
       dbclient.query(
         `INSERT INTO products(
@@ -104,11 +121,12 @@ app.post('/product', upload.single('image'), (req, res)=>{
                 '${req.body.name}'
                 ,'${req.body.description}'
                 ,${req.body.price}
-                ,'${req.file.filename}'
-            )`, (err, result)=>{
+                ,'${req.protocol+"://"+req.headers.host+"/images/"+req.file.filename}'
+            )
+            RETURNING *`, (err, result)=>{
             if(!err){
                 console.log("success!");
-                res.send(result);
+                res.status(200).send(result.rows);
             } else {
                 console.log(err);
             }
@@ -116,7 +134,7 @@ app.post('/product', upload.single('image'), (req, res)=>{
     dbclient.end;
 })
 
-app.put('/product/:id', (req, res)=>{    
+app.put('/product/:id', requireLogin, (req, res)=>{    
     let name = req.body.name;
     let price = req.body.price;
     let image = req.body.image;
@@ -125,12 +143,12 @@ app.put('/product/:id', (req, res)=>{
     dbclient.query(
         `UPDATE products
          SET name = '${name}', price = ${price}, 
-         image = '${image}', description = '${description}'
+         image = '${req.protocol+"://"+req.headers.host+"/images/"+image}', description = '${description}'
          WHERE id = ${id}`,
         (err, result)=>{
             if(!err){
                 console.log("success!");
-                res.send(result);
+                res.status(200).send(result.rows);
             } else {
                 console.log(err);
             }
@@ -138,12 +156,12 @@ app.put('/product/:id', (req, res)=>{
     dbclient.end;
 })
 
-app.delete('/product/:id', (req, res)=>{
+app.delete('/product/:id', requireLogin, (req, res)=>{
     let id = req.params.id;
-    dbclient.query(`DELETE from PRODUCT where id = ${id}`, (err, result)=>{
+    dbclient.query(`DELETE from PRODUCTS where id = ${id}`, (err, result)=>{
         if(!err){
             console.log("deletion success!");
-            res.send(result);
+            res.send(result.rows);
         } else {
             console.log(err);
         }
@@ -194,7 +212,7 @@ app.post('/cart/add', (req, res) =>{
         VALUES (${req.session.userId}, ${req.body.product_id}, ${req.body.quantity})`
         , (err, result)=>{
             if(!err){
-                res.status(200).json({ message: 'Product added to cart' });
+                res.status(200).send(result.rows);
             } else {
                 res.status(500).json({ message: 'Server error' });
             }
@@ -206,7 +224,7 @@ app.post('/cart/add', (req, res) =>{
 app.get('/carts', (req, res)=>{
     dbclient.query(`Select * from carts`, (err, result)=>{
         if(!err){
-            res.send(result.rows);
+            res.status(200).send(result.rows);
         }
     });
     dbclient.end;
@@ -215,7 +233,7 @@ app.get('/carts', (req, res)=>{
  app.get('/orders', (req, res)=>{
      dbclient.query(`Select * from orders`, (err, result)=>{
          if(!err){
-             res.send(result.rows);
+             res.status(200).send(result.rows);
          }
      });
      dbclient.end;
@@ -224,7 +242,7 @@ app.get('/carts', (req, res)=>{
  app.get('/users', (req, res)=>{
      dbclient.query(`Select * from users`, (err, result)=>{
          if(!err){
-             res.send(result.rows);
+             res.status(200).send(result.rows);
          }
      });
      dbclient.end;
@@ -237,7 +255,7 @@ app.get('/carts', (req, res)=>{
     dbclient.query("DELETE from users WHERE id = " + req.params.id, (err, result)=>{
         if(!err){
             console.log("success!");
-            res.status(200).send("Deleted " + req.params.id);
+            res.status(200).send(result.rows);
         } else {
             console.log(err);
         }
@@ -255,7 +273,7 @@ app.put('/users/:email', (req, res)=>{
         (err, result)=>{
             if(!err){
                 console.log("success!");
-                res.send(result);
+                res.status(200).send(result.rows);
             } else {
                 console.log(err);
             }
@@ -284,7 +302,7 @@ app.post('/user', async (req, res) => {
                 VALUES ('${req.body.name}','${req.body.email}','${hashedPassword}')`, (err, result)=>{
                     if(!err){
                         
-                        return res.status(201).json({ message: 'User registered successfully' + req.body.name });
+                        return res.status(200).send(result.rows);
 
                     } else {
                         console.log(err);
@@ -323,9 +341,7 @@ app.post('/users/reset/:email', (req, res) => {
                     VALUES ($1, $2, NOW() + INTERVAL \'1 day\')`, 
                         [result.rows[0].id, resetToken], (err, result)=>{
                         if(!err){
-                            return res.status(200).json(
-                                { message: 'Password reset token generated', token: resetToken }
-                            );
+                            res.status(200).send(result.rows);
                             //We shouldn't actually expose this to the front end,
                             // but instead the backend should send the mail directly
                             //if we have time we can look into thise
@@ -368,9 +384,7 @@ app.put('/users/reset/:token', (req, res) => {
 
                             dbclient.query(`DELETE FROM  password_reset_tokens 
                             WHERE user_id = ${userid}`, (err, result)=>{
-                                return res.status(200).json(
-                                    { message: 'Password updated' }
-                                );
+                                return res.status(200).send(result.rows);
                                 });
                         }
                     })
@@ -420,7 +434,7 @@ app.post('/login', (req, res) => {
 app.get('/customers', (req, res)=>{
     dbclient.query(`Select * from customers`, (err, result)=>{
         if(!err){
-            res.send(result.rows);
+            res.status(200).send(result.rows);
         }
     });
     dbclient.end;
@@ -444,7 +458,7 @@ app.post('/customers', upload.single('image'), (req, res)=>{
             )`, (err, result)=>{
             if(!err){
                 console.log("success!");
-                res.send(result);
+                res.status(200).send(result.rows);
             } else {
                 console.log(err);
             }
@@ -466,7 +480,7 @@ app.put('/customer/:id', (req, res)=>{
         (err, result)=>{
             if(!err){
                 console.log("success!");
-                res.send(result);
+                res.status(200).send(result.rows);
             } else {
                 console.log(err);
             }
