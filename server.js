@@ -5,6 +5,9 @@ const bodyParser = require("body-parser");
 const app = express();
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const cors = require('cors');
+
+app.use(cors({ origin: '*' }));
 
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -58,9 +61,9 @@ const storage = multer.diskStorage({
     app.use(session(sessionOptions));
     app.use('/images', express.static('images'));
 
-    app.listen(3000, ()=>{
-        console.log("Server is now listening at port 3000");
-        //sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 3000
+    app.listen(8080, ()=>{
+        console.log("Server is now listening at port 8080");
+        //sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
     })
 
 

@@ -1,0 +1,15 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "Web Store",
+            "Group": "Servers",
+            "Shared": true,
+            "Host": "host.docker.internal",
+            "Port": 5432,
+            "MaintenanceDB": "postgres",
+            "Username": "admin",
+            "PassFile": "/var/lib/pgadmin/pgpass",
+            "SSLMode": "prefer"
+        }
+    }
+}

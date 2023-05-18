@@ -1,76 +1,70 @@
 ALTER USER admin PASSWORD 'admin';
 
-CREATE DATABASE web_store;
-GRANT ALL ON DATABASE web_store TO admin;
-
-CREATE USER service_web_store WITH PASSWORD 'service_web_store';
-
 CREATE SCHEMA IF NOT EXISTS web_store AUTHORIZATION admin;
 GRANT ALL ON SCHEMA web_store TO admin;
-GRANT ALL ON SCHEMA web_store TO service_web_store;
 
-ALTER ROLE service_web_store SET search_path = web_store;
+ALTER ROLE admin SET search_path = web_store;
+
+SET SCHEMA 'web_store';
 
 CREATE TABLE order_items
 (
-    id SEQUENCE,
-    order_id integer NOT NULL,
-    product_id integer NOT NULL,
-    quantity integer NOT NULL    
+    id          SERIAL      PRIMARY KEY,
+    order_id    INTEGER     NOT NULL,
+    product_id  INTEGER     NOT NULL,
+    quantity    INTEGER     NOT NULL    
 );
 
 CREATE TABLE orders
 (
-    id SEQUENCE,
-    user_id integer NOT NULL,
-    status text COLLATE pg_catalog."default" NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    CONSTRAINT orders_pkey PRIMARY KEY (id)
+    id          SERIAL      PRIMARY KEY,
+    user_id     INTEGER     NOT NULL,
+    status      TEXT        COLLATE pg_catalog."default" NOT NULL,
+    created_at  TIMESTAMP   WITHOUT TIME ZONE NOT NULL
 );
 
 CREATE TABLE password_reset_tokens
 (
-    id SEQUENCE,
-    user_id bigint NOT NULL,
-    token text COLLATE pg_catalog."default" NOT NULL,
-    created_at timestamp DEFAULT now(),
-    expires_at timestamp NOT NULL
+    id          SERIAL      PRIMARY KEY,
+    user_id     INTEGER     NOT NULL,
+    token       TEXT        COLLATE pg_catalog."default" NOT NULL,
+    created_at  TIMESTAMP   DEFAULT now(),
+    expires_at  TIMESTAMP   NOT NULL
 );
 
 CREATE TABLE products
 (
-    id SEQUENCE,
-    name text NOT NULL,
-    description text ,
-    price numeric NOT NULL
+    id              SERIAL  PRIMARY KEY,
+    name            TEXT    NOT NULL,
+    description     TEXT    NOT NULL,
+    price           NUMERIC NOT NULL,
+    image_path      TEXT    DEFAULT NULL
     --imageblob bytea,
-    --image_path text,    
 );
 
 CREATE TABLE users
 (
-    id SEQUENCE,
-    name text NOT NULL,
-    email text NOT NULL,
-    password text NOT NULL,
-    CONSTRAINT users_pkey PRIMARY KEY (id),
+    id              SERIAL  PRIMARY KEY,
+    name            TEXT    NOT NULL,
+    email           TEXT    NOT NULL,
+    password        TEXT    NOT NULL,
+
     CONSTRAINT users_email_key UNIQUE (email)
 );
 
 CREATE TABLE customers (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  address TEXT,
-  phone TEXT
+    id              SERIAL  PRIMARY KEY,
+    name            TEXT    NOT NULL,
+    email           TEXT    NOT NULL UNIQUE,
+    address         TEXT,
+    phone           TEXT
 );
 
 CREATE TABLE "session" (
-  "sid" varchar NOT NULL COLLATE "default",
-  "sess" json NOT NULL,
-  "expire" timestamp(6) NOT NULL
-)
-WITH (OIDS=FALSE);
+    "sid"           VARCHAR         NOT NULL COLLATE "default",
+    "sess"          JSON            NOT NULL,
+    "expire"        TIMESTAMP(6)    NOT NULL
+) WITH (OIDS=FALSE);
 
 ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
 

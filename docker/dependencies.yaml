@@ -18,3 +18,26 @@ services:
       interval: 5s
       timeout: 10s
       retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:6.12
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@webstore.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+    ports:
+      - "5050:80"
+    volumes:
+      - ./dbadmin-init/servers.json:/pgadmin4/servers.json
+      - ./dbadmin-init/pgpass:/pgadmin4/pgpass
+    entrypoint: >
+      /bin/sh -c "
+      cp -f /pgadmin4/pgpass /var/lib/pgadmin/;
+      chmod 600 /var/lib/pgadmin/pgpass;
+      chown pgadmin:pgadmin /var/lib/pgadmin/pgpass;
+      /entrypoint.sh
+      "
+    depends_on:
+      - "postgres"
